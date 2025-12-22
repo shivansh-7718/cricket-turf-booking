@@ -25,7 +25,7 @@ const Booking = () => {
 
   const fetchSlotDetails = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/slots/${slotId}`);
+      const response = await axios.get(`https://cricket-turf-booking.onrender.com/api/slots/${slotId}`);
       setSlot(response.data);
     } catch (error) {
       console.error('Error fetching slot details:', error);
@@ -48,7 +48,7 @@ const Booking = () => {
 
       // 1. Create Razorpay order
       const { data: order } = await axios.post(
-        'http://localhost:5000/api/payments/create-order',
+        'https://cricket-turf-booking.onrender.com/api/payments/create-order',
         { amount: slot.price }
       );
 
@@ -64,7 +64,7 @@ const Booking = () => {
         handler: async function (response) {
           // 3. Verify payment
           const { data } = await axios.post(
-            'http://localhost:5000/api/payments/verify',
+            'https://cricket-turf-booking.onrender.com/api/payments/verify',
             {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,

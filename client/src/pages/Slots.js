@@ -17,7 +17,7 @@ const Slots = () => {
 
   const fetchSlots = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/slots/today');
+      const response = await axios.get('https://cricket-turf-booking.onrender.com/api/slots/today');
       // Filter out any slots with invalid time data
       const validSlots = response.data.filter(slot => 
         slot.startTime && slot.endTime && 
