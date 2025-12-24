@@ -1,33 +1,59 @@
-const express = require('express');
-const Razorpay = require('razorpay');
-const crypto = require('crypto');
-const Booking = require('../models/Booking');
-const Slot = require('../models/Slot');
-const User = require('../models/User'); // ✅ ADD
-const sendEmail = require('../utils/sendEmail'); // ✅ ADD
+
+import express from 'express';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
+import Booking from '../models/Booking.js';
+import Slot from '../models/Slot.js';
+import User from '../models/User.js';
+import sendEmail from '../utils/sendEmail.js';
 
 const router = express.Router();
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+let razorpay = null;
 
-// Create Razorpay order
+const getRazorpayClient = () => {
+  if (!razorpay) {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+      throw new Error('RAZORPAY keys missing');
+    }
+
+    razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret
+    });
+  }
+
+  return razorpay;
+};
+
+/* =======================
+   CREATE ORDER
+   ======================= */
 router.post('/create-order', async (req, res) => {
-  const { amount } = req.body;
+  try {
+    const { amount } = req.body;
 
-  const options = {
-    amount: amount * 100, // in paise
-    currency: 'INR',
-    receipt: 'rcpt_' + Date.now()
-  };
+    const razorpayClient = getRazorpayClient();
 
-  const order = await razorpay.orders.create(options);
-  res.json(order);
+    const order = await razorpayClient.orders.create({
+      amount: amount * 100,
+      currency: 'INR',
+      receipt: 'rcpt_' + Date.now()
+    });
+
+    res.json(order);
+  } catch (err) {
+    console.error('❌ Create order error:', err.message);
+    res.status(500).json({ error: 'Order creation failed' });
+  }
 });
 
-// Verify payment and create booking
+/* =======================
+   VERIFY PAYMENT
+======================= */
 router.post('/verify', async (req, res) => {
   try {
     const {
@@ -38,7 +64,7 @@ router.post('/verify', async (req, res) => {
       slotId
     } = req.body;
 
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const body = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(body)
@@ -55,7 +81,7 @@ router.post('/verify', async (req, res) => {
 
     const bookingId = 'BK' + Date.now();
 
-    const booking = new Booking({
+    const booking = await Booking.create({
       bookingId,
       user: userId,
       slot: slotId,
@@ -63,47 +89,46 @@ router.post('/verify', async (req, res) => {
       startTime: slot.startTime,
       endTime: slot.endTime,
       amount: slot.price,
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
-      razorpaySignature: razorpay_signature,
-      paymentStatus: 'completed'
+      paymentStatus: 'completed',
+      paymentId: razorpay_payment_id
     });
-
-    await booking.save();
 
     slot.isBooked = true;
     slot.bookingId = bookingId;
     await slot.save();
 
-    /* ============================
-       📧 EMAIL CONFIRMATION (NEW)
-       ============================ */
-    const user = await User.findById(userId);
-
-    if (user?.email) {
-      await sendEmail({
-        to: user.email,
-        subject: '✅ Cricket Turf Booking Confirmed',
-        html: `
-          <h2>Booking Confirmed 🏏</h2>
-          <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-          <p><strong>Date:</strong> ${new Date(slot.date).toDateString()}</p>
-          <p><strong>Time:</strong> ${slot.startTime} - ${slot.endTime}</p>
-          <p><strong>Amount Paid:</strong> ₹${booking.amount}</p>
-          <br/>
-          <p>Please arrive 15 minutes before your slot.</p>
-          <p>Thank you for booking with us!</p>
-        `
-      });
-
-      console.log('📧 Confirmation email sent to:', user.email);
-    }
-
+    /* ✅ SEND RESPONSE IMMEDIATELY */
     res.json({ success: true, booking });
+
+    /* ==========================
+       🔥 BACKGROUND TASKS
+       ========================== */
+    setImmediate(async () => {
+      try {
+        const user = await User.findById(userId);
+        if (!user?.email) return;
+
+        await sendEmail({
+          to: user.email,
+          subject: '✅ Cricket Turf Booking Confirmed',
+          html: `
+            <h2>Booking Confirmed 🏏</h2>
+            <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
+            <p><strong>Date:</strong> ${new Date(slot.date).toDateString()}</p>
+            <p><strong>Time:</strong> ${slot.startTime} - ${slot.endTime}</p>
+            <p><strong>Amount Paid:</strong> ₹${booking.amount}</p>
+          `
+        });
+      } catch (err) {
+        console.error('❌ Background email error:', err.message);
+      }
+    });
+
   } catch (err) {
-    console.error('❌ Payment verification error:', err);
+    console.error('❌ Verify error:', err.message);
     res.status(500).json({ error: 'Payment verification failed' });
   }
 });
 
-module.exports = router;
+  
+export default router;

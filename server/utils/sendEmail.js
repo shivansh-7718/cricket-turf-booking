@@ -1,26 +1,36 @@
-const nodemailer = require('nodemailer');
+import { Resend } from 'resend';
+
+let resendClient = null;
+
+const getResendClient = () => {
+  if (!resendClient) {
+    const key = process.env.RESEND_API_KEY;
+
+    if (!key) {
+      throw new Error('RESEND_API_KEY is missing at runtime');
+    }
+
+    resendClient = new Resend(key);
+  }
+
+  return resendClient;
+};
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    const resend = getResendClient();
 
-    await transporter.sendMail({
-      from: `"Cricket Turf Booking" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: 'Cricket Turf Booking <onboarding@resend.dev>',
       to,
       subject,
-      html
+      html,
     });
 
-    console.log('📧 Email sent to:', to);
+    console.log('📧 Email queued successfully for:', to);
   } catch (error) {
-    console.error('❌ Email error:', error.message);
+    console.error('❌ Email send failed:', error.message);
   }
 };
 
-module.exports = sendEmail;
+export default sendEmail;

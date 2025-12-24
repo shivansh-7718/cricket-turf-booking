@@ -1,10 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const Booking = require('../models/Booking');
-const Slot = require('../models/Slot');
-const sendEmail = require('../utils/sendEmail'); // ✅ STEP 4 ADDITION
+import express from 'express';
+import Booking from '../models/Booking.js';
+import Slot from '../models/Slot.js';
+import sendEmail from '../utils/sendEmail.js';
 
-// Create booking
+const router = express.Router();
+
+/* ============================
+   CREATE BOOKING
+============================ */
 router.post('/create', async (req, res) => {
   try {
     const { userId, slotId, paymentId, userData } = req.body;
@@ -37,7 +40,7 @@ router.post('/create', async (req, res) => {
       endTime: slot.endTime,
       amount: slot.price,
       paymentStatus: 'completed',
-      paymentId: paymentId || 'demo_payment_' + Date.now()
+      paymentId: paymentId || 'demo_payment_' + Date.now(),
     });
 
     await booking.save();
@@ -50,9 +53,9 @@ router.post('/create', async (req, res) => {
 
     console.log(`✅ Booking created: ${bookingId}`);
 
-    /* =======================
-       📧 STEP 4: SEND EMAIL
-       ======================= */
+    /* ============================
+       📧 EMAIL CONFIRMATION
+    ============================ */
     if (userData?.email) {
       await sendEmail({
         to: userData.email,
@@ -66,17 +69,17 @@ router.post('/create', async (req, res) => {
           <br/>
           <p>Please arrive 15 minutes before your slot.</p>
           <p>Thank you for booking with us!</p>
-        `
+        `,
       });
     }
 
-    // Return data in the format expected by frontend
+    // Return data in format expected by frontend
     res.json({
       _id: booking._id,
       bookingId: booking.bookingId,
       user: userData || {
         name: 'User',
-        email: 'user@example.com'
+        email: 'user@example.com',
       },
       slot: {
         startTime: slot.startTime,
@@ -85,13 +88,13 @@ router.post('/create', async (req, res) => {
         price: slot.price,
         duration: slot.duration || '1 hour',
         startTime24: slot.startTime24,
-        endTime24: slot.endTime24
+        endTime24: slot.endTime24,
       },
       amount: booking.amount,
       paymentStatus: booking.paymentStatus,
       paymentId: booking.paymentId,
       createdAt: booking.createdAt || new Date(),
-      date: booking.date
+      date: booking.date,
     });
   } catch (err) {
     console.error('❌ Booking error:', err);
@@ -99,12 +102,15 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// Get user bookings
+/* ============================
+   GET USER BOOKINGS
+============================ */
 router.get('/user/:userId', async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.params.userId })
       .populate('slot', 'startTime endTime date')
       .sort({ createdAt: -1 });
+
     res.json(bookings);
   } catch (err) {
     console.error('Error fetching bookings:', err);
@@ -112,9 +118,11 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// Test route
+/* ============================
+   TEST ROUTE
+============================ */
 router.get('/test', (req, res) => {
   res.json({ message: 'Bookings API is working!' });
 });
 
-module.exports = router;
+export default router;

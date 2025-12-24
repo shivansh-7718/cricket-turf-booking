@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const SlotSchema = new mongoose.Schema({
     date: {
@@ -50,4 +50,5 @@ const SlotSchema = new mongoose.Schema({
 // Add compound index for better performance
 SlotSchema.index({ date: 1, isBooked: 1 });
 
-module.exports = mongoose.model('Slot', SlotSchema);
+
+export default mongoose.model('Slot', SlotSchema);

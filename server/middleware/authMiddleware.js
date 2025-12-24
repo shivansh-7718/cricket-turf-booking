@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-module.exports = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -20,7 +20,7 @@ module.exports = async (req, res, next) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    // ✅ THIS IS THE KEY LINE
+    // ✅ attach user to request
     req.user = user;
 
     next();
@@ -28,3 +28,5 @@ module.exports = async (req, res, next) => {
     return res.status(401).json({ error: 'Invalid token' });
   }
 };
+
+export default authMiddleware;
