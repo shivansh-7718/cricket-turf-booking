@@ -90,3 +90,51 @@ body {
     margin: 12mm;
   }
 }
+
+/* ===============================
+   MOBILE NAVBAR FIX (TAILWIND)
+================================ */
+
+@media (max-width: 768px) {
+  /* Navbar container */
+  nav .container > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Right-side content */
+  nav .container > div > div:last-child {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px;
+  }
+
+  /* Buttons full width */
+  nav a.btn-primary,
+  nav button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Admin link */
+  nav a[href="/admin/analytics"] {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Welcome text styling */
+  nav span {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  /* Hide welcome text completely */
+  nav span:has(svg + span) {
+    display: none;
+  }
+}
+

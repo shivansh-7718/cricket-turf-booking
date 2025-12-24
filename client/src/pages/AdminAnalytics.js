@@ -20,7 +20,7 @@ const AdminAnalytics = () => {
       try {
         const [peakRes, slotRes, revenueRes] = await Promise.all([
           axios.get('https://cricket-turf-booking-production.up.railway.app/api/admin/analytics/peak-hours'),
-          axios.get('https://cricket-turf-booking-production.up.railway.app/admin/analytics/slot-utilization'),
+          axios.get('https://cricket-turf-booking-production.up.railway.app/api/admin/analytics/slot-utilization'),
           axios.get('https://cricket-turf-booking-production.up.railway.app/api/admin/analytics/revenue')
         ]);
 
