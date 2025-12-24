@@ -19,9 +19,9 @@ const AdminAnalytics = () => {
     const fetchAnalytics = async () => {
       try {
         const [peakRes, slotRes, revenueRes] = await Promise.all([
-          axios.get('https://cricket-turf-booking.onrender.com/api/admin/analytics/peak-hours'),
-          axios.get('https://cricket-turf-booking.onrender.com/api/admin/analytics/slot-utilization'),
-          axios.get('https://cricket-turf-booking.onrender.com/api/admin/analytics/revenue')
+          axios.get('https://cricket-turf-booking-production.up.railway.app/api/admin/analytics/peak-hours'),
+          axios.get('https://cricket-turf-booking-production.up.railway.app/admin/analytics/slot-utilization'),
+          axios.get('https://cricket-turf-booking-production.up.railway.app/api/admin/analytics/revenue')
         ]);
 
         setPeakHours(peakRes.data);

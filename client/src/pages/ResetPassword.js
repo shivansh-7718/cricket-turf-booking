@@ -10,7 +10,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await axios.post(
-      `https://cricket-turf-booking.onrender.com/api/auth/reset-password/${token}`,
+      `https://cricket-turf-booking-production.up.railway.app/api/auth/reset-password/${token}`,
       { password }
     );
     alert('Password updated successfully');

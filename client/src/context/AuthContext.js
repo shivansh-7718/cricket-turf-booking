@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, phone) => {
     try {
-      const response = await axios.post('https://cricket-turf-booking.onrender.com/api/auth/register', { name, email, password, phone });
+      const response = await axios.post('https://cricket-turf-booking-production.up.railway.app/api/auth/register', { name, email, password, phone });
       const { token, user } = response.data;
       
       localStorage.setItem('token', token);

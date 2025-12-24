@@ -7,7 +7,7 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post('https://cricket-turf-booking.onrender.com/api/auth/forgot-password', { email });
+    await axios.post('https://cricket-turf-booking-production.up.railway.app/api/auth/forgot-password', { email });
     setSent(true);
   };
 
