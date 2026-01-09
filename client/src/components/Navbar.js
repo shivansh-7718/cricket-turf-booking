@@ -77,7 +77,7 @@ const Navbar = () => {
 
           {/* MOBILE HAMBURGER */}
           <button
-            className="md:hidden text-2xl text-primary-600"
+            className="md:hidden ml-auto text-2xl text-primary-600"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <FaTimes /> : <FaBars />}
