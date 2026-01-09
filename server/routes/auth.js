@@ -103,7 +103,7 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetUrl = `https://cricket-turf-booking.vercel.app//reset-password/${resetToken}`;
 
     // ✅ SEND RESPONSE FIRST
     res.json({ success: true });
