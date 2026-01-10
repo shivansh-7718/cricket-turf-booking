@@ -46,6 +46,86 @@ const shouldRefreshSlots = async (date) => {
 
 /* ---------------- ROUTES ---------------- */
 
+router.get('/by-date', async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ error: 'Date is required' });
+    }
+
+    const selectedDate = new Date(date);
+    if (isNaN(selectedDate)) {
+      return res.status(400).json({ error: 'Invalid date format' });
+    }
+
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isToday = selectedDate.getTime() === today.getTime();
+
+    if (isToday) {
+      await shouldRefreshSlots(selectedDate);
+    }
+
+    let slots = await Slot.find({
+      date: { $gte: selectedDate, $lt: nextDay }
+    });
+
+    if (slots.length === 0) {
+      const newSlots = [];
+
+      for (let hour = 8; hour < 22; hour++) {
+        const startTime24 = `${hour.toString().padStart(2, '0')}:00`;
+        const endTime24 = `${(hour + 1).toString().padStart(2, '0')}:00`;
+
+        let price = 800;
+        if (hour >= 12 && hour < 16) price = 1000;
+        if (hour >= 16 && hour < 20) price = 1200;
+        if (hour >= 20) price = 1500;
+
+        newSlots.push({
+          date: new Date(selectedDate),
+          startTime: formatTo12Hour(startTime24),
+          endTime: formatTo12Hour(endTime24),
+          startTime24,
+          endTime24,
+          price,
+          isBooked: false
+        });
+      }
+
+      slots = await Slot.insertMany(newSlots);
+    }
+
+    const availableSlots = slots
+      .filter(s => !s.isBooked)
+      .map(s => ({
+        _id: s._id,
+        date: s.date,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        startTime24: s.startTime24,
+        endTime24: s.endTime24,
+        price: s.price,
+        duration: '1 hour'
+      }))
+      .sort((a, b) => a.startTime24.localeCompare(b.startTime24));
+
+    res.json(availableSlots);
+
+  } catch (err) {
+    console.error('❌ by-date error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 // Get today's available slots
 router.get('/today', async (req, res) => {
   try {
