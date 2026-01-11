@@ -168,7 +168,6 @@
 
 
 
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -187,7 +186,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false); // ⬅️ stays CLOSED by default
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -195,12 +194,12 @@ const Navbar = () => {
     setMenuOpen(false);
   };
 
-  // ✅ Called ONLY when user clicks "Continue" in calendar
+  // ✅ Date selected from calendar
   const handleDateSelect = (date) => {
-    const formattedDate = date.toISOString().split('T')[0];
+    const formatted = date.toISOString().split('T')[0];
     setCalendarOpen(false);
     setMenuOpen(false);
-    navigate(`/slots?date=${formattedDate}`);
+    navigate(`/slots?date=${formatted}`);
   };
 
   return (
@@ -213,7 +212,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* LOGO */}
-            <Link to="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center space-x-2">
               <FaCalendarAlt className="text-primary-600 text-2xl" />
               <span className="text-xl font-bold text-primary-600">
                 Cricket Turf
@@ -222,86 +221,111 @@ const Navbar = () => {
 
             {/* DESKTOP MENU */}
             <div className="hidden md:flex items-center gap-4">
-              {user?.role === 'admin' && (
-                <Link
-                  to="/admin/analytics"
-                  className="text-primary-600 font-semibold"
-                >
-                  <FaChartLine className="inline mr-1" />
-                  AI Dashboard
-                </Link>
-              )}
+              {user ? (
+                <>
+                  <span className="font-medium text-gray-700">
+                    Hi, {user.name}
+                  </span>
 
-              {/* ✅ BOOK SLOT → OPENS CALENDAR */}
-              <button
-                onClick={() => setCalendarOpen(true)}
-                className="btn-primary text-sm py-2 px-4"
-              >
-                Book Slot
-              </button>
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/admin/analytics"
+                      className="text-primary-600 font-semibold"
+                    >
+                      <FaChartLine className="inline mr-1" />
+                      AI Dashboard
+                    </Link>
+                  )}
 
-              {user && (
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-1 text-red-600"
-                >
-                  <FaSignOutAlt /> Logout
-                </button>
+                  {/* ✅ ONLY THIS BUTTON OPENS CALENDAR */}
+                  <button
+                    onClick={() => setCalendarOpen(true)}
+                    className="btn-primary text-sm py-2 px-4"
+                  >
+                    Book Slot
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1 text-red-600"
+                  >
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="btn-primary text-sm py-2 px-5">
+                    Login
+                  </Link>
+                  <Link to="/register" className="btn-primary text-sm py-2 px-5">
+                    Register
+                  </Link>
+                </>
               )}
             </div>
 
-            {/* MOBILE HAMBURGER */}
+            {/* MOBILE */}
             <button
-              className="md:hidden text-2xl text-primary-600"
+              className="md:hidden ml-auto text-2xl text-primary-600"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? <FaTimes /> : <FaBars />}
             </button>
           </div>
 
-          {/* MOBILE MENU */}
           {menuOpen && (
             <div className="md:hidden mt-4 flex flex-col items-center gap-4">
-              {user?.role === 'admin' && (
-                <Link
-                  to="/admin/analytics"
-                  onClick={() => setMenuOpen(false)}
-                  className="btn-primary w-full text-center py-2"
-                >
-                  AI Dashboard
-                </Link>
-              )}
+              {user ? (
+                <>
+                  <span className="font-medium text-gray-700">
+                    Hi, {user.name}
+                  </span>
 
-              {/* ✅ MOBILE BOOK SLOT */}
-              <button
-                onClick={() => setCalendarOpen(true)}
-                className="btn-primary w-full py-2"
-              >
-                Book Slot
-              </button>
+                  <button
+                    onClick={() => setCalendarOpen(true)}
+                    className="btn-primary w-full text-center py-2"
+                  >
+                    Book Slot
+                  </button>
 
-              {user && (
-                <button
-                  onClick={handleLogout}
-                  className="text-red-600 font-semibold"
-                >
-                  Logout
-                </button>
+                  <button
+                    onClick={handleLogout}
+                    className="text-red-600 font-semibold"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="btn-primary w-full text-center py-2"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="btn-primary w-full text-center py-2"
+                  >
+                    Register
+                  </Link>
+                </>
               )}
             </div>
           )}
         </div>
       </motion.nav>
 
-      {/* ✅ CALENDAR MODAL (ONLY OPENS ON CLICK) */}
+      {/* ✅ CALENDAR MODAL (CONNECTED PROPERLY) */}
       <CalendarModal
         open={calendarOpen}
         onClose={() => setCalendarOpen(false)}
-        onSelect={handleDateSelect}
+        onSelect={handleDateSelect}   
       />
     </>
   );
 };
 
 export default Navbar;
-
