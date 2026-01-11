@@ -1,50 +1,42 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
-import { motion } from 'framer-motion';
+import 'react-datepicker/dist/react-datepicker.css';
 
-const CalendarModal = ({ onClose, onConfirm }) => {
+const CalendarModal = ({ open, onClose, onSelect }) => {
   const [date, setDate] = useState(new Date());
 
-  const handleConfirm = () => {
-    const formattedDate = date.toISOString().split('T')[0];
-    onConfirm(formattedDate);
-  };
+  if (!open) return null; // ✅ CRITICAL LINE
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-xl"
-      >
-        <h2 className="text-xl font-bold mb-4 text-center">
-          Select Booking Date
-        </h2>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 w-[320px] text-center">
+        <h2 className="text-xl font-bold mb-4">Select Booking Date</h2>
 
-        <div className="flex justify-center mb-6">
-          <DatePicker
-            selected={date}
-            onChange={(d) => setDate(d)}
-            minDate={new Date()}
-            inline
-          />
-        </div>
+        <DatePicker
+          selected={date}
+          onChange={setDate}
+          inline
+          minDate={new Date()}
+        />
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-4">
           <button
-            onClick={onClose}
-            className="w-1/2 py-2 rounded-lg border border-gray-300"
+            onClick={onClose}              // ✅ Cancel works
+            className="w-1/2 border rounded-lg py-2"
           >
             Cancel
           </button>
+
           <button
-            onClick={handleConfirm}
-            className="w-1/2 py-2 rounded-lg bg-primary-600 text-white font-semibold"
+            onClick={() =>
+              onSelect(date.toISOString().split('T')[0])
+            }                               // ✅ Continue works
+            className="w-1/2 bg-primary-600 text-white rounded-lg py-2"
           >
             Continue
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
