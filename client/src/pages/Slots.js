@@ -47,9 +47,14 @@ const Slots = () => {
 
   const handleBookSlot = (slot) => {
     if (!user) {
+      sessionStorage.setItem(
+        'redirectAfterLogin',
+        window.location.pathname + window.location.search
+      );
       navigate('/login');
       return;
     }
+    
 
     sessionStorage.setItem('availableSlots', JSON.stringify(slots));
 

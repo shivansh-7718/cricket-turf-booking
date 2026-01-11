@@ -19,7 +19,12 @@ const Login = () => {
     try {
       const result = await login(email, password);
       if (result.success) {
-        navigate('/slots');
+        const redirectPath =
+  sessionStorage.getItem('redirectAfterLogin') || '/';
+
+sessionStorage.removeItem('redirectAfterLogin');
+navigate(redirectPath);
+
       } else {
         setError(result.error);
       }
