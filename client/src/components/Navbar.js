@@ -237,13 +237,13 @@ const Navbar = () => {
                     </Link>
                   )}
 
-                  {/* ✅ ONLY THIS BUTTON OPENS CALENDAR */}
+                  {/* ✅ ONLY THIS BUTTON OPENS CALENDAR
                   <button
                     onClick={() => setCalendarOpen(true)}
                     className="btn-primary text-sm py-2 px-4"
                   >
                     Book Slot
-                  </button>
+                  </button> */}
 
                   <button
                     onClick={handleLogout}
@@ -281,12 +281,12 @@ const Navbar = () => {
                     Hi, {user.name}
                   </span>
 
-                  <button
+                  {/* <button
                     onClick={() => setCalendarOpen(true)}
                     className="btn-primary w-full text-center py-2"
                   >
                     Book Slot
-                  </button>
+                  </button> */}
 
                   <button
                     onClick={handleLogout}
