@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -16,6 +16,7 @@ import {
 const Receipt = () => {
   const { bookingId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate(); // ✅ ADD
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -36,10 +37,7 @@ const Receipt = () => {
     };
 
     const bookingData = getBookingData();
-
-    if (bookingData) {
-      setBooking(bookingData);
-    }
+    if (bookingData) setBooking(bookingData);
     setLoading(false);
   }, [bookingId, location.state]);
 
@@ -67,6 +65,21 @@ Email: ${user?.email}
     URL.revokeObjectURL(url);
   };
 
+  // ✅ FIXED BOOK AGAIN HANDLER
+  const handleBookAgain = () => {
+    const dateSource = booking?.date || booking?.slot?.date;
+    if (!dateSource) {
+      navigate('/slots');
+      return;
+    }
+
+    const formattedDate = new Date(dateSource)
+      .toISOString()
+      .split('T')[0];
+
+    navigate(`/slots?date=${formattedDate}`);
+  };
+
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString('en-US', {
       month: 'numeric',
@@ -92,14 +105,14 @@ Email: ${user?.email}
         animate={{ scale: 1, opacity: 1 }}
         className="receipt-card bg-white rounded-2xl shadow-2xl overflow-hidden"
       >
-        {/* Header */}
+        {/* HEADER */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 p-8 text-center text-white">
           <FaCheckCircle className="text-6xl mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Booking Confirmed!</h1>
           <p className="opacity-90">Your slot has been successfully booked</p>
         </div>
 
-        {/* Details */}
+        {/* DETAILS */}
         <div className="p-8 space-y-6">
           <div className="text-center">
             <div className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full font-semibold">
@@ -113,7 +126,9 @@ Email: ${user?.email}
               <FaCalendar className="text-primary-500 mr-3 text-xl" />
               <div>
                 <div className="text-sm text-gray-600">Date</div>
-                <div className="font-semibold">{formatDate(booking.date || booking.slot?.date)}</div>
+                <div className="font-semibold">
+                  {formatDate(booking.date || booking.slot?.date)}
+                </div>
               </div>
             </div>
 
@@ -122,7 +137,8 @@ Email: ${user?.email}
               <div>
                 <div className="text-sm text-gray-600">Time Slot</div>
                 <div className="font-semibold">
-                  {booking.startTime || booking.slot?.startTime} - {booking.endTime || booking.slot?.endTime}
+                  {booking.startTime || booking.slot?.startTime} -{' '}
+                  {booking.endTime || booking.slot?.endTime}
                 </div>
               </div>
             </div>
@@ -141,7 +157,9 @@ Email: ${user?.email}
                 <FaRupeeSign className="text-green-500 mr-3 text-xl" />
                 <div>
                   <div className="text-sm text-gray-600">Amount Paid</div>
-                  <div className="font-semibold">₹{booking.amount || booking.slot?.price}</div>
+                  <div className="font-semibold">
+                    ₹{booking.amount || booking.slot?.price}
+                  </div>
                 </div>
               </div>
               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
@@ -150,7 +168,7 @@ Email: ${user?.email}
             </div>
           </div>
 
-          {/* Notes */}
+          {/* NOTES */}
           <div className="border-t pt-6">
             <h3 className="font-semibold mb-3 text-lg">Important Notes</h3>
             <ul className="space-y-2 text-gray-600">
@@ -162,7 +180,7 @@ Email: ${user?.email}
           </div>
         </div>
 
-        {/* Actions (hidden in print) */}
+        {/* ACTIONS */}
         <div className="bg-gray-50 p-6 border-t flex gap-4">
           <button
             onClick={handlePrint}
@@ -180,12 +198,13 @@ Email: ${user?.email}
             Download
           </button>
 
-          <Link
-            to="/slots"
-            className="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold text-center"
+          {/* ✅ FIXED */}
+          <button
+            onClick={handleBookAgain}
+            className="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold"
           >
             Book Again
-          </Link>
+          </button>
         </div>
       </motion.div>
     </div>
